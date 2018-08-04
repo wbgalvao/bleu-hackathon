@@ -34,7 +34,7 @@ type getBalancesResponse struct {
 type withdrawResponse struct {
 	Success string
 	Message string
-	Result  string
+	Result  []interface{}
 }
 
 func getHashMacStr(message, key string) string {

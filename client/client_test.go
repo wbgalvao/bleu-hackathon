@@ -51,7 +51,7 @@ func TestGetBalances(t *testing.T) {
 }
 
 func TestWithdraw(t *testing.T) {
-	success, err := c.Withdraw("DOGE", "0.10", "")
+	success, err := c.Withdraw("DOGE", "11", "")
 	if err != nil {
 		t.Errorf("erro calling Withdraw endpoint: %v", err)
 	}
