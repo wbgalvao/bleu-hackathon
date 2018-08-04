@@ -181,7 +181,7 @@ func (c *Client) Withdraw(currency, quantity, destAddress string, opt ...string)
 	q.Add("address", destAddress)
 
 	if len(opt) > 0 {
-		q.Add("currency", opt[0])
+		q.Add("comments", opt[0])
 	}
 
 	req.URL.RawQuery = q.Encode()
