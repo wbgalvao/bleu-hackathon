@@ -65,7 +65,21 @@ func TestGetBalancesOptionalParameter(t *testing.T) {
 }
 
 func TestWithdraw(t *testing.T) {
+	// NOTICE!!
+	// Substitute for your address wallet in the empty string
 	success, err := c.Withdraw("DOGE", "11", "")
+	if err != nil {
+		t.Errorf("erro calling Withdraw endpoint: %v", err)
+	}
+	if success {
+		t.Errorf("SUCCESS!")
+	}
+}
+
+func TestWithdrawOptionalParameter(t *testing.T) {
+	// NOTICE!!
+	// Substitute for your address wallet in the empty string
+	success, err := c.Withdraw("DOGE", "12", "", "Hello Ramon. That's my comment.")
 	if err != nil {
 		t.Errorf("erro calling Withdraw endpoint: %v", err)
 	}
