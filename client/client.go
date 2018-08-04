@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
 
 	"github.com/wbgalvao/bleu-hackathon/balance"
 )
@@ -30,8 +31,14 @@ type getBalancesResponse struct {
 	Result  []balance.Balance
 }
 
+type withdrawResponse struct {
+	Success string
+	Message string
+	Result  string
+}
+
 func getHashMacStr(message, key string) string {
-	secretInBytes := []byte(c.APISecret)
+	secretInBytes := []byte(key)
 
 	mac := hmac.New(sha512.New, secretInBytes)
 	mac.Write([]byte(message))
@@ -42,7 +49,7 @@ func getHashMacStr(message, key string) string {
 }
 
 // BuildRequest uses the HTTP Client to build a new http.Request object
-func (c *Client) BuildRequest(method, destPath string, body interface{}, requestIsPrivate bool) (*http.Request, error) {
+func (c *Client) BuildRequest(method, destPath string, body interface{}) (*http.Request, error) {
 
 	u, err := url.Parse(c.BaseURL.String())
 	if err != nil {
@@ -73,25 +80,28 @@ func (c *Client) BuildRequest(method, destPath string, body interface{}, request
 	req.Header.Set("Accept", "application/json")
 
 	// add apiKey querystring if request is private
-	if requestIsPrivate {
-		q := req.URL.Query()
-		q.Add("apikey", c.APIKey)
+	q := req.URL.Query()
+	q.Add("apikey", c.APIKey)
 
-		req.URL.RawQuery = q.Encode()
+	req.URL.RawQuery = q.Encode()
 
-		str := getHashMacStr(req.URL.String(), c.APISecret)
-		fmt.Println(str)
-		q.Add("apisign", str)
-
-		req.URL.RawQuery = q.Encode()
-	}
 	fmt.Println("[DBG] " + req.URL.String())
 
 	return req, nil
 }
 
 // DoRequest uses the Client http.Client field to execute an http.Request
-func (c *Client) DoRequest(req *http.Request) (*http.Response, error) {
+func (c *Client) DoRequest(req *http.Request, requestIsPrivate bool) (*http.Response, error) {
+	if requestIsPrivate {
+		q := req.URL.Query()
+		str := getHashMacStr(req.URL.String(), c.APISecret)
+		fmt.Println(str)
+		q.Add("apisign", str)
+
+		req.URL.RawQuery = q.Encode()
+	}
+
+	fmt.Println("[URL] " + req.URL.String())
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -105,13 +115,13 @@ func (c *Client) GetBalances() ([]balance.Balance, error) {
 	var result []balance.Balance
 
 	// build request
-	req, err := c.BuildRequest("GET", "/account/getbalances", nil, true)
+	req, err := c.BuildRequest("GET", "/account/getbalances", nil)
 	if err != nil {
 		return result, fmt.Errorf("error creating request for GetBalance")
 	}
 
 	// execute request
-	resp, err := c.DoRequest(req)
+	resp, err := c.DoRequest(req, true)
 	if err != nil {
 		fmt.Println()
 		return result, fmt.Errorf("error in GetBalances request: %v", err)
@@ -138,5 +148,58 @@ func (c *Client) GetBalances() ([]balance.Balance, error) {
 	}
 
 	return gbr.Result, nil
+
+}
+
+func (c *Client) Withdraw(currency, quantity, destAddress string, opt ...string) (bool, error) {
+	if len(opt) > 1 {
+		return false, fmt.Errorf("To many args for this function")
+	}
+	// build request
+	req, err := c.BuildRequest("GET", "/account/withdraw", nil)
+	if err != nil {
+		return false, fmt.Errorf("error creating request for Withdraw")
+	}
+
+	// build params for request withdraw
+
+	q := req.URL.Query()
+	q.Add("currency", currency)
+	q.Add("quantity", quantity)
+	q.Add("address", destAddress)
+
+	if len(opt) > 0 {
+		q.Add(currency, opt[0])
+	}
+
+	req.URL.RawQuery = q.Encode()
+
+	// execute request
+	resp, err := c.DoRequest(req, true)
+	if err != nil {
+		fmt.Println()
+		return false, fmt.Errorf("error in Withdraw request: %v", err)
+	}
+
+	// open response body
+	respJSON, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false, fmt.Errorf("error reading response body: %v", err)
+	}
+	defer resp.Body.Close()
+
+	fmt.Println(string(respJSON))
+	// decode response
+	var wr withdrawResponse
+	err = json.Unmarshal(respJSON, &wr)
+	if err != nil {
+		return false, fmt.Errorf("could not unmarshall response body JSON: %v", err)
+	}
+
+	if wr.Success != "true" {
+		return false, fmt.Errorf("error retrieving balance for account: %s", wr.Message)
+	}
+
+	return strconv.ParseBool(wr.Success)
 
 }

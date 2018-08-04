@@ -11,8 +11,8 @@ import (
 
 var (
 	baseURL   = "https://bleutrade.com/api/v2/"
-	apiKey    = "1b4554bf23d2daa583df68be3ccca530" // ReadOnly access
-	apiSecret = "7ed265afec4956d01ad3461d3da8fa9fdee0ad7e"
+	apiKey    = "af849b626359ccf9a13f0d8fde899c97" // ReadOnly access
+	apiSecret = "ee8f3d52cadcb93b00b96f0be3d7d135a206e4ad"
 	c         Client
 )
 
@@ -29,7 +29,7 @@ func setup() {
 }
 
 func TestBuildRequest(t *testing.T) {
-	_, err := c.BuildRequest("GET", "/public/getcurrencies", nil, false)
+	_, err := c.BuildRequest("GET", "/public/getcurrencies", nil)
 	if err != nil {
 		t.Errorf("error building HTTP request: %v\n", err)
 	}
@@ -47,6 +47,16 @@ func TestGetBalances(t *testing.T) {
 		if n, err := strconv.ParseFloat(balance.Available, 32); n > 0 && err == nil {
 			t.Logf("[LOG] Coin: %s | Value: %s\n", balance.Currency, balance.Available)
 		}
+	}
+}
+
+func TestWithdraw(t *testing.T) {
+	success, err := c.Withdraw("DOGE", "0.10", "")
+	if err != nil {
+		t.Errorf("erro calling Withdraw endpoint: %v", err)
+	}
+	if success {
+		t.Errorf("SUCCESS!")
 	}
 }
 
