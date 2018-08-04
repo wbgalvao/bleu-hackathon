@@ -3,9 +3,9 @@ package balance
 // Balance represents the balance of the account for a given currency
 type Balance struct {
 	Currency      string
-	Balance       float32
-	Available     float32
-	Pending       float32
+	Balance       string
+	Available     string
+	Pending       string
 	CryptoAddress string
-	IsActive      bool
+	IsActive      string
 }

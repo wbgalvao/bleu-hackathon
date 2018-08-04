@@ -25,18 +25,18 @@ type Client struct {
 }
 
 type getBalancesResponse struct {
-	success string
-	message string
-	result  []balance.Balance
+	Success string
+	Message string
+	Result  []balance.Balance
 }
 
-func getMacStr(message, key string) string {
+func getHashMacStr(message, key string) string {
 	secretInBytes := []byte(c.APISecret)
 
 	mac := hmac.New(sha512.New, secretInBytes)
 	mac.Write([]byte(message))
 	expectedMac := mac.Sum(nil)
-	fmt.Printf("[DBG] getMacStr %s + %s = ", message, key)
+	fmt.Printf("[DBG] getHashMacStr %s + %s = ", message, key)
 
 	return hex.EncodeToString(expectedMac)
 }
@@ -79,7 +79,7 @@ func (c *Client) BuildRequest(method, destPath string, body interface{}, request
 
 		req.URL.RawQuery = q.Encode()
 
-		str := getMacStr(req.URL.String(), c.APISecret)
+		str := getHashMacStr(req.URL.String(), c.APISecret)
 		fmt.Println(str)
 		q.Add("apisign", str)
 
@@ -133,11 +133,11 @@ func (c *Client) GetBalances() ([]balance.Balance, error) {
 
 	fmt.Println(string(respJSON))
 
-	fmt.Println("[DBG] success:" + gbr.success + " message:" + gbr.message)
-	if gbr.success != "true" {
-		return result, fmt.Errorf("error retrieving balance for account: %s", gbr.message)
+	fmt.Println("[DBG] success:" + gbr.Success + " message:" + gbr.Message)
+	if gbr.Success != "true" {
+		return result, fmt.Errorf("error retrieving balance for account: %s", gbr.Message)
 	}
 
-	return gbr.result, nil
+	return gbr.Result, nil
 
 }
