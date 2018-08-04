@@ -111,13 +111,25 @@ func (c *Client) DoRequest(req *http.Request, requestIsPrivate bool) (*http.Resp
 }
 
 // GetBalances returns a list of Balances for a given account
-func (c *Client) GetBalances() ([]balance.Balance, error) {
+func (c *Client) GetBalances(opt ...string) ([]balance.Balance, error) {
 	var result []balance.Balance
+
+	if len(opt) > 1 {
+		return result, fmt.Errorf("To many args for this function")
+	}
 
 	// build request
 	req, err := c.BuildRequest("GET", "/account/getbalances", nil)
 	if err != nil {
 		return result, fmt.Errorf("error creating request for GetBalance")
+	}
+	fmt.Println("[DEBUG_OPT]")
+	fmt.Println(opt)
+
+	if len(opt) > 0 {
+		q := req.URL.Query()
+		q.Add("currencies", opt[0])
+		req.URL.RawQuery = q.Encode()
 	}
 
 	// execute request
@@ -169,7 +181,7 @@ func (c *Client) Withdraw(currency, quantity, destAddress string, opt ...string)
 	q.Add("address", destAddress)
 
 	if len(opt) > 0 {
-		q.Add(currency, opt[0])
+		q.Add("currency", opt[0])
 	}
 
 	req.URL.RawQuery = q.Encode()

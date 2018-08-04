@@ -50,6 +50,20 @@ func TestGetBalances(t *testing.T) {
 	}
 }
 
+func TestGetBalancesOptionalParameter(t *testing.T) {
+	balances, err := c.GetBalances("DOGE")
+	t.Error("[LOG]")
+	if err != nil {
+		t.Errorf("error calling GetBalances endpoint: %v\n", err)
+	}
+
+	for _, balance := range balances {
+		if n, err := strconv.ParseFloat(balance.Available, 32); n > 0 && err == nil {
+			t.Logf("[LOG] Coin: %s | Value: %s\n", balance.Currency, balance.Available)
+		}
+	}
+}
+
 func TestWithdraw(t *testing.T) {
 	success, err := c.Withdraw("DOGE", "11", "")
 	if err != nil {
