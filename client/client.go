@@ -133,7 +133,6 @@ func (c *Client) GetBalances() ([]balance.Balance, error) {
 
 	fmt.Println(string(respJSON))
 
-	fmt.Println("[DBG] success:" + gbr.Success + " message:" + gbr.Message)
 	if gbr.Success != "true" {
 		return result, fmt.Errorf("error retrieving balance for account: %s", gbr.Message)
 	}

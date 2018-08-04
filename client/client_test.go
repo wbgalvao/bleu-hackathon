@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"testing"
 )
 
@@ -36,9 +37,16 @@ func TestBuildRequest(t *testing.T) {
 }
 
 func TestGetBalances(t *testing.T) {
-	_, err := c.GetBalances()
+	balances, err := c.GetBalances()
+	t.Error("[LOG]")
 	if err != nil {
 		t.Errorf("error calling GetBalances endpoint: %v\n", err)
+	}
+
+	for _, balance := range balances {
+		if n, err := strconv.ParseFloat(balance.Available, 32); n > 0 && err == nil {
+			t.Logf("[LOG] Coin: %s | Value: %s\n", balance.Currency, balance.Available)
+		}
 	}
 }
 
