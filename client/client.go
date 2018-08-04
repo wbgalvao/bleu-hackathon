@@ -25,13 +25,24 @@ type Client struct {
 }
 
 type getBalancesResponse struct {
-	success bool
+	success string
 	message string
 	result  []balance.Balance
 }
 
+func getMacStr(message, key string) string {
+	secretInBytes := []byte(c.APISecret)
+
+	mac := hmac.New(sha512.New, secretInBytes)
+	mac.Write([]byte(message))
+	expectedMac := mac.Sum(nil)
+	fmt.Printf("[DBG] getMacStr %s + %s = ", message, key)
+
+	return hex.EncodeToString(expectedMac)
+}
+
 // BuildRequest uses the HTTP Client to build a new http.Request object
-func (c *Client) BuildRequest(method, destPath string, body interface{}) (*http.Request, error) {
+func (c *Client) BuildRequest(method, destPath string, body interface{}, requestIsPrivate bool) (*http.Request, error) {
 
 	u, err := url.Parse(c.BaseURL.String())
 	if err != nil {
@@ -61,6 +72,21 @@ func (c *Client) BuildRequest(method, destPath string, body interface{}) (*http.
 	}
 	req.Header.Set("Accept", "application/json")
 
+	// add apiKey querystring if request is private
+	if requestIsPrivate {
+		q := req.URL.Query()
+		q.Add("apikey", c.APIKey)
+
+		req.URL.RawQuery = q.Encode()
+
+		str := getMacStr(req.URL.String(), c.APISecret)
+		fmt.Println(str)
+		q.Add("apisign", str)
+
+		req.URL.RawQuery = q.Encode()
+	}
+	fmt.Println("[DBG] " + req.URL.String())
+
 	return req, nil
 }
 
@@ -74,40 +100,15 @@ func (c *Client) DoRequest(req *http.Request) (*http.Response, error) {
 	return resp, err
 }
 
-func getMacStr(message, key string) string {
-	secretInBytes := []byte(c.APISecret)
-
-	mac := hmac.New(sha512.New, secretInBytes)
-	mac.Write([]byte(message))
-	expectedMac := mac.Sum(nil)
-	fmt.Printf("[DBG] %s + %s = ", message, key)
-
-	return hex.EncodeToString(expectedMac)
-}
-
 // GetBalances returns a list of Balances for a given account
 func (c *Client) GetBalances() ([]balance.Balance, error) {
 	var result []balance.Balance
 
 	// build request
-	req, err := c.BuildRequest("GET", "/account/getbalances", nil)
+	req, err := c.BuildRequest("GET", "/account/getbalances", nil, true)
 	if err != nil {
 		return result, fmt.Errorf("error creating request for GetBalance")
 	}
-
-	// add apiKey querystring
-	q := req.URL.Query()
-	q.Add("apikey", c.APIKey)
-
-	req.URL.RawQuery = q.Encode()
-
-	str := getMacStr(req.URL.String(), c.APISecret)
-	fmt.Println(str)
-	q.Add("apisign", str)
-
-	req.URL.RawQuery = q.Encode()
-
-	fmt.Println(req.URL.String())
 
 	// execute request
 	resp, err := c.DoRequest(req)
@@ -132,8 +133,9 @@ func (c *Client) GetBalances() ([]balance.Balance, error) {
 
 	fmt.Println(string(respJSON))
 
-	if gbr.success != true {
-		return result, fmt.Errorf("error retrieving balance for account: %v", gbr.message)
+	fmt.Println("[DBG] success:" + gbr.success + " message:" + gbr.message)
+	if gbr.success != "true" {
+		return result, fmt.Errorf("error retrieving balance for account: %s", gbr.message)
 	}
 
 	return gbr.result, nil

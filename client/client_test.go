@@ -28,10 +28,11 @@ func setup() {
 }
 
 func TestBuildRequest(t *testing.T) {
-	_, err := c.BuildRequest("GET", "/public/getcurrencies", nil)
+	_, err := c.BuildRequest("GET", "/public/getcurrencies", nil, false)
 	if err != nil {
 		t.Errorf("error building HTTP request: %v\n", err)
 	}
+
 }
 
 func TestGetBalances(t *testing.T) {
