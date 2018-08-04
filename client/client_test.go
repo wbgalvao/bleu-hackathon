@@ -9,9 +9,10 @@ import (
 )
 
 var (
-	baseURL = "https://bleutrade.com/api/v2/"
-	apiKey  = "dcf7c6651d91ab69c31df6355f9ea8e28f4ab4ed" // ReadOnly access
-	c       Client
+	baseURL   = "https://bleutrade.com/api/v2/"
+	apiKey    = "1b4554bf23d2daa583df68be3ccca530" // ReadOnly access
+	apiSecret = "7ed265afec4956d01ad3461d3da8fa9fdee0ad7e"
+	c         Client
 )
 
 func setup() {
@@ -22,6 +23,7 @@ func setup() {
 	}
 	c.BaseURL = u
 	c.APIKey = apiKey
+	c.APISecret = apiSecret
 	c.httpClient = new(http.Client)
 }
 

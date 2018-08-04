@@ -2,6 +2,9 @@ package client
 
 import (
 	"bytes"
+	"crypto/hmac"
+	"crypto/sha512"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,13 +13,14 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/wbgalvao/bleu-hackathon-chall-1/balance"
+	"github.com/wbgalvao/bleu-hackathon/balance"
 )
 
 // Client represents a HTTP Client
 type Client struct {
 	BaseURL    *url.URL
 	APIKey     string
+	APISecret  string
 	httpClient *http.Client
 }
 
@@ -70,6 +74,17 @@ func (c *Client) DoRequest(req *http.Request) (*http.Response, error) {
 	return resp, err
 }
 
+func getMacStr(message, key string) string {
+	secretInBytes := []byte(c.APISecret)
+
+	mac := hmac.New(sha512.New, secretInBytes)
+	mac.Write([]byte(message))
+	expectedMac := mac.Sum(nil)
+	fmt.Printf("[DBG] %s + %s = ", message, key)
+
+	return hex.EncodeToString(expectedMac)
+}
+
 // GetBalances returns a list of Balances for a given account
 func (c *Client) GetBalances() ([]balance.Balance, error) {
 	var result []balance.Balance
@@ -82,7 +97,14 @@ func (c *Client) GetBalances() ([]balance.Balance, error) {
 
 	// add apiKey querystring
 	q := req.URL.Query()
-	q.Add("apiKey", c.APIKey)
+	q.Add("apikey", c.APIKey)
+
+	req.URL.RawQuery = q.Encode()
+
+	str := getMacStr(req.URL.String(), c.APISecret)
+	fmt.Println(str)
+	q.Add("apisign", str)
+
 	req.URL.RawQuery = q.Encode()
 
 	fmt.Println(req.URL.String())
