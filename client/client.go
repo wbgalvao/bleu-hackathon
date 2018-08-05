@@ -51,7 +51,7 @@ type marketSummaryResponse struct {
 	Result  []market.Market
 }
 
-type buyLimitResponse struct {
+type limitOperationsResponse struct {
 	Success string
 	Message string
 	Result  map[string]string
@@ -385,16 +385,77 @@ func (c *Client) BuyLimit(m, quantity string, opt ...string) (map[string]string,
 	defer resp.Body.Close()
 
 	// decode response
-	var blr buyLimitResponse
-	err = json.Unmarshal(respJSON, &blr)
+	var lor limitOperationsResponse
+	err = json.Unmarshal(respJSON, &lor)
 	if err != nil {
 		return result, fmt.Errorf("could not unmarshall response body JSON: %v", err)
 	}
 
-	if blr.Success != "true" {
-		return result, fmt.Errorf("error buying limit for account: %s", blr.Message)
+	if lor.Success != "true" {
+		return result, fmt.Errorf("error buying limit for account: %s", lor.Message)
 	}
 
-	return blr.Result, nil
+	return lor.Result, nil
+
+}
+
+func (c *Client) SellLimit(m, quantity string, opt ...string) (map[string]string, error) {
+	result := make(map[string]string)
+	if len(opt) > 1 {
+		return result, fmt.Errorf("too many args for this function")
+	}
+
+	// get market bid
+	var ms []market.Market
+	ms, err := c.GetMarketSummary(m)
+	if err != nil {
+		return result, fmt.Errorf("could not retrieve market summary: %v", err)
+	}
+	rate := floatToString(ms[0].Bid)
+
+	// build request
+	req, err := c.BuildRequest("GET", "/market/selllimit", nil)
+	if err != nil {
+		return result, fmt.Errorf("error creating request for SellLimit")
+	}
+
+	// add querystring parameters
+	q := req.URL.Query()
+	q.Add("market", m)
+	q.Add("rate", rate)
+	q.Add("quantity", quantity)
+	if len(opt) > 0 {
+		q.Add("comments", opt[0])
+	}
+	req.URL.RawQuery = q.Encode()
+
+	// execute request
+	resp, err := c.DoRequest(req, true)
+	if err != nil {
+		fmt.Println()
+		return result, fmt.Errorf("error in SellLimit request: %v", err)
+	}
+
+	// open response body
+	respJSON, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return result, fmt.Errorf("error reading response body: %v", err)
+	}
+	defer resp.Body.Close()
+
+	fmt.Println(string(respJSON))
+
+	// decode response
+	var lor limitOperationsResponse
+	err = json.Unmarshal(respJSON, &lor)
+	if err != nil {
+		return result, fmt.Errorf("could not unmarshall response body JSON: %v", err)
+	}
+
+	if lor.Success != "true" {
+		return result, fmt.Errorf("error selling limit for account: %s", lor.Message)
+	}
+
+	return lor.Result, nil
 
 }
