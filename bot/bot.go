@@ -5,9 +5,11 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/wbgalvao/bleu-hackathon/balance"
 	client "github.com/wbgalvao/bleu-hackathon/client"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
@@ -52,16 +54,24 @@ func Init() {
 	})
 
 	b.Handle("/saldo", func(m *tb.Message) {
-		b.Send(m.Sender, m.Payload)
-		balances, err := cli.GetBalances()
+		var balances []balance.Balance
+		var err error
+		if m.Payload != "" {
+			b.Send(m.Sender, "Seu saldo em "+m.Payload+"é:")
+			balances, err = cli.GetBalances(m.Payload)
+		} else {
+			b.Send(m.Sender, "Você tem saldo nas seguintes moedas:")
+			balances, err = cli.GetBalances()
+		}
 		if err != nil {
 			fmt.Println("Deu erro")
 			b.Send(m.Sender, err)
 		}
 		for _, balance := range balances {
 			fmt.Println(balance)
-
-			b.Send(m.Sender, "Moeda: "+balance.Currency+"\nSaldo: "+balance.Balance)
+			if n, err := strconv.ParseFloat(balance.Available, 32); n > 0 && err == nil {
+				b.Send(m.Sender, "Moeda: "+balance.Currency+"\nSaldo: "+balance.Balance)
+			}
 		}
 	})
 
