@@ -14,3 +14,11 @@ Commands for chat bot:
 
 /wallet
 
+## build instructions with Docker
+
+build the image:
+`$ docker build . -t donamaria`
+
+run container:
+`$ docker container run -d donamaria`
+
