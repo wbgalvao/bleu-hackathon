@@ -19,7 +19,18 @@ const URL = "https://bleutrade.com/api/v2/"
 
 var apiKey string
 var apiSecret string
-var cli client.Client
+
+// senderCache = make(map[*tb.User]client.Client)
+
+func NewClient(apiKey, apiSecret string) client.Client {
+	var cli client.Client
+	cli.BaseURL, _ = url.Parse(URL)
+	cli.HttpClient = new(http.Client)
+
+	cli.APIKey = apiKey
+	cli.APISecret = apiSecret
+	return cli
+}
 
 func Init() {
 	b, err := tb.NewBot(tb.Settings{
@@ -31,15 +42,16 @@ func Init() {
 		log.Fatal(err)
 		return
 	}
-	cli.BaseURL, _ = url.Parse(URL)
-	cli.HttpClient = new(http.Client)
+	senderCache := make(map[int]client.Client)
 
 	b.Handle("/registerApiKey", func(m *tb.Message) {
+		var cli = senderCache[m.Sender.ID]
 		cli.APIKey = m.Payload
 		b.Send(m.Sender, "Key registered")
 	})
 
 	b.Handle("/registerApiSecret", func(m *tb.Message) {
+		var cli = senderCache[m.Sender.ID]
 		cli.APISecret = m.Payload
 		b.Send(m.Sender, "Api Secret registered")
 	})
@@ -48,14 +60,20 @@ func Init() {
 		splittedPayload := strings.Split(m.Payload, " ")
 		apiKey := splittedPayload[0]
 		apiSecret := splittedPayload[1]
-		cli.APIKey = apiKey
-		cli.APISecret = apiSecret
+		ncli := NewClient(apiKey, apiSecret)
+		fmt.Println("new client mapped")
+		fmt.Println(ncli)
+		senderCache[m.Sender.ID] = ncli
+		fmt.Println("Sender")
+		fmt.Println(m.Sender.ID)
+
 		b.Send(m.Sender, "Chave e segredo registrados!")
 	})
 
 	b.Handle("/saldo", func(m *tb.Message) {
 		var balances []balance.Balance
 		var err error
+		cli := senderCache[m.Sender.ID]
 		if m.Payload != "" {
 			b.Send(m.Sender, "Seu saldo em "+m.Payload+"é:")
 			balances, err = cli.GetBalances(m.Payload)
@@ -76,6 +94,9 @@ func Init() {
 	})
 
 	b.Handle("/wallet", func(m *tb.Message) {
+		var cli = senderCache[m.Sender.ID]
+		fmt.Println("sender wallet")
+		fmt.Println(m.Sender)
 		b.Send(m.Sender, m.Payload)
 		result, err := cli.GetBalances("BTC")
 		if err != nil {
@@ -90,6 +111,7 @@ func Init() {
 	})
 
 	b.Handle("/buylimit", func(m *tb.Message) {
+		var cli = senderCache[m.Sender.ID]
 		b.Send(m.Sender, m.Payload)
 		splittedPayload := strings.Split(m.Payload, " ")
 		market := splittedPayload[0]
@@ -104,6 +126,7 @@ func Init() {
 	})
 
 	b.Handle("/selllimit", func(m *tb.Message) {
+		var cli = senderCache[m.Sender.ID]
 		b.Send(m.Sender, m.Payload)
 		splittedPayload := strings.Split(m.Payload, " ")
 		market := splittedPayload[0]
@@ -118,6 +141,8 @@ func Init() {
 	})
 
 	b.Handle("/saque", func(m *tb.Message) {
+		var cli = senderCache[m.Sender.ID]
+		b.Send(m.Sender, m.Payload)
 		splittedPayload := strings.Split(m.Payload, " ")
 		currency := splittedPayload[0]
 		quantity := splittedPayload[1]

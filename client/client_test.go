@@ -88,11 +88,10 @@ func TestListOrdersOptionalParameter(t *testing.T) {
 	}
 }
 
-/*
 func TestWithdraw(t *testing.T) {
 	// NOTICE!!
 	// Substitute for your address wallet in the empty string
-	success, err := c.Withdraw("DOGE", "11", "")
+	success, err := c.Withdraw("DOGE", "11", "199orcawcBHvftiAwp4vgEuix1f1DfR")
 	if err != nil {
 		t.Errorf("erro calling Withdraw endpoint: %v", err)
 	}
@@ -101,6 +100,7 @@ func TestWithdraw(t *testing.T) {
 	}
 }
 
+/*
 func TestWithdrawOptionalParameter(t *testing.T) {
 	// NOTICE!!
 	// Substitute for your address wallet in the empty string
