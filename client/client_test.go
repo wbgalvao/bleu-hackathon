@@ -64,6 +64,31 @@ func TestGetBalancesOptionalParameter(t *testing.T) {
 	}
 }
 
+func TestListOrders(t *testing.T) {
+	orders, err := c.ListOrder("ALL", "ALL", "ALL")
+	t.Error("[LOG]")
+	if err != nil {
+		t.Errorf("error calling GetBalances endpoint: %v\n", err)
+	}
+
+	for _, order := range orders {
+		t.Logf("[LOG] Type: %s | Status: %s|Created at: %s| Price: %s\n", order.Type, order.Status, order.Created, order.Price)
+	}
+}
+
+func TestListOrdersOptionalParameter(t *testing.T) {
+	orders, err := c.ListOrder("ALL", "ALL", "ALL", "1000")
+	t.Error("[LOG]")
+	if err != nil {
+		t.Errorf("error calling GetBalances endpoint: %v\n", err)
+	}
+
+	for _, order := range orders {
+		t.Logf("[LOG] Type: %s | Status: %s|Created at: %s| Price: %s\n", order.Type, order.Status, order.Created, order.Price)
+	}
+}
+
+/*
 func TestWithdraw(t *testing.T) {
 	// NOTICE!!
 	// Substitute for your address wallet in the empty string
@@ -87,7 +112,7 @@ func TestWithdrawOptionalParameter(t *testing.T) {
 		t.Errorf("SUCCESS!")
 	}
 }
-
+*/
 // func TestGetBalances_checkResults(t *testing.T) {
 // 	results, _ := c.GetBalances()
 // 	if len(results) == 0 {

@@ -15,6 +15,7 @@ import (
 	"strconv"
 
 	"github.com/wbgalvao/bleu-hackathon/balance"
+	"github.com/wbgalvao/bleu-hackathon/order"
 )
 
 // Client represents a HTTP Client
@@ -35,6 +36,12 @@ type withdrawResponse struct {
 	Success string
 	Message string
 	Result  []interface{}
+}
+
+type getOrdersResponse struct {
+	Success string
+	Message string
+	Result  []order.Order
 }
 
 func getHashMacStr(message, key string) string {
@@ -214,4 +221,57 @@ func (c *Client) Withdraw(currency, quantity, destAddress string, opt ...string)
 
 	return strconv.ParseBool(wr.Success)
 
+}
+
+func (c *Client) ListOrder(market, orderStatus, orderType string, opt ...string) ([]order.Order, error) {
+	var result []order.Order
+	if len(opt) > 1 {
+		return result, fmt.Errorf("To many args for this function")
+	}
+	// build request
+	req, err := c.BuildRequest("GET", "/account/getorders", nil)
+	if err != nil {
+		return result, fmt.Errorf("error creating request for Withdraw")
+	}
+
+	// build params for request withdraw
+
+	q := req.URL.Query()
+	q.Add("market", market)
+	q.Add("ordertype", orderType)
+	q.Add("orderstatus", orderStatus)
+
+	if len(opt) > 0 {
+		q.Add("depth", opt[0])
+	}
+
+	req.URL.RawQuery = q.Encode()
+
+	// execute request
+	resp, err := c.DoRequest(req, true)
+	if err != nil {
+		fmt.Println()
+		return result, fmt.Errorf("error in Withdraw request: %v", err)
+	}
+
+	// open response body
+	respJSON, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return result, fmt.Errorf("error reading response body: %v", err)
+	}
+	defer resp.Body.Close()
+
+	fmt.Println(string(respJSON))
+	// decode response
+	var gor getOrdersResponse
+	err = json.Unmarshal(respJSON, &gor)
+	if err != nil {
+		return result, fmt.Errorf("could not unmarshall response body JSON: %v", err)
+	}
+
+	if gor.Success != "true" {
+		return result, fmt.Errorf("error retrieving balance for account: %s", gor.Message)
+	}
+
+	return gor.Result, nil
 }
