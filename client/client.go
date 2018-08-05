@@ -51,6 +51,12 @@ type marketSummaryResponse struct {
 	Result  []market.Market
 }
 
+type buyLimitResponse struct {
+	Success string
+	Message string
+	Result  map[string]string
+}
+
 func getHashMacStr(message, key string) string {
 	secretInBytes := []byte(key)
 
@@ -60,6 +66,10 @@ func getHashMacStr(message, key string) string {
 	fmt.Printf("[DBG] getHashMacStr %s + %s = ", message, key)
 
 	return hex.EncodeToString(expectedMac)
+}
+
+func floatToString(input_num float64) string {
+	return strconv.FormatFloat(input_num, 'f', 8, 64)
 }
 
 // BuildRequest uses the HTTP Client to build a new http.Request object
@@ -324,5 +334,67 @@ func (c *Client) GetMarketSummary(m string) ([]market.Market, error) {
 	}
 
 	return msr.Result, nil
+
+}
+
+func (c *Client) BuyLimit(m, quantity string, opt ...string) (map[string]string, error) {
+	result := make(map[string]string)
+	if len(opt) > 1 {
+		return result, fmt.Errorf("too many args for this function")
+	}
+
+	// get market bid
+	var ms []market.Market
+	ms, err := c.GetMarketSummary(m)
+	if err != nil {
+		return result, fmt.Errorf("could not retrieve market summary: %v", err)
+	}
+
+	fmt.Println(ms)
+
+	rate := floatToString(ms[0].Bid)
+
+	// build request
+	req, err := c.BuildRequest("GET", "/market/buylimit", nil)
+	if err != nil {
+		return result, fmt.Errorf("error creating request for BuyLimit")
+	}
+
+	// add querystring parameters
+	q := req.URL.Query()
+	q.Add("market", m)
+	q.Add("rate", rate)
+	q.Add("quantity", quantity)
+	if len(opt) > 0 {
+		q.Add("comments", opt[0])
+	}
+	req.URL.RawQuery = q.Encode()
+
+	// execute request
+	resp, err := c.DoRequest(req, true)
+	if err != nil {
+		fmt.Println()
+		return result, fmt.Errorf("error in BuyLimit request: %v", err)
+	}
+
+	// open response body
+	respJSON, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return result, fmt.Errorf("error reading response body: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// decode response
+	var blr buyLimitResponse
+	err = json.Unmarshal(respJSON, &blr)
+	if err != nil {
+		return result, fmt.Errorf("could not unmarshall response body JSON: %v", err)
+	}
+
+	if blr.Success != "true" {
+		return result, fmt.Errorf("error buying limit for account: %s", blr.Message)
+	}
+
+	return blr.Result, nil
 
 }

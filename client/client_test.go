@@ -127,6 +127,13 @@ func TestGetMarketSummary(t *testing.T) {
 	}
 }
 
+// func TestBuyLimit(t *testing.T) {
+// 	_, err := c.BuyLimit("DOGE_BTC", "100")
+// 	if err != nil {
+// 		t.Errorf("error trying to buy limit: %v\n", err)
+// 	}
+// }
+
 func TestMain(m *testing.M) {
 	setup()
 	retCode := m.Run()
