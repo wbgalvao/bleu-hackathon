@@ -24,7 +24,7 @@ type Client struct {
 	BaseURL    *url.URL
 	APIKey     string
 	APISecret  string
-	httpClient *http.Client
+	HttpClient *http.Client
 }
 
 type getBalancesResponse struct {
@@ -126,7 +126,7 @@ func (c *Client) DoRequest(req *http.Request, requestIsPrivate bool) (*http.Resp
 	}
 
 	fmt.Println("[URL] " + req.URL.String())
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

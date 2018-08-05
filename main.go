@@ -1,3 +1,8 @@
 package main
 
-func main() {}
+import "github.com/wbgalvao/bleu-hackathon/bot"
+
+func main() {
+	bot.Init()
+
+}
