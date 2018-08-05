@@ -57,7 +57,17 @@ func Init() {
 	})
 
 	b.Handle("/wallet", func(m *tb.Message) {
-
+		b.Send(m.Sender, m.Payload)
+		result, err := cli.GetBalances("BTC")
+		if err != nil {
+			fmt.Println("Deu erro")
+			b.Send(m.Sender, err)
+		}
+		for _, balance := range result {
+			if balance.Currency == "BTC" {
+				b.Send(m.Sender, fmt.Sprintf("Aqui está o endereço da sua wallet: %s", balance.CryptoAddress))
+			}
+		}
 	})
 
 	b.Handle("/buylimit", func(m *tb.Message) {
