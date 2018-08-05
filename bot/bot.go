@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	client "github.com/wbgalvao/bleu-hackathon/client"
@@ -55,8 +56,22 @@ func Init() {
 		}
 	})
 
-	b.handle("/wallet", func(m *tb.Message) {
+	b.Handle("/wallet", func(m *tb.Message) {
 
+	})
+
+	b.Handle("/buylimit", func(m *tb.Message) {
+		b.Send(m.Sender, m.Payload)
+		splittedPayload := strings.Split(m.Payload, " ")
+		market := splittedPayload[0]
+		quantity := splittedPayload[1]
+		result := make(map[string]string)
+		result, err := cli.BuyLimit(market, quantity)
+		if err != nil {
+			fmt.Println("Deu erro")
+			b.Send(m.Sender, err)
+		}
+		b.Send(m.Sender, fmt.Sprintf("Compra efetuada! Identificação da transação: %s", result["orderid"]))
 	})
 
 	b.Handle(tb.OnText, func(m *tb.Message) {
