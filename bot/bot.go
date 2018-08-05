@@ -42,6 +42,15 @@ func Init() {
 		b.Send(m.Sender, "Api Secret registered")
 	})
 
+	b.Handle("/setup", func(m *tb.Message) {
+		splittedPayload := strings.Split(m.Payload, " ")
+		apiKey := splittedPayload[0]
+		apiSecret := splittedPayload[1]
+		cli.APIKey = apiKey
+		cli.APISecret = apiSecret
+		b.Send(m.Sender, "Chave e segredo registrados!")
+	})
+
 	b.Handle("/saldo", func(m *tb.Message) {
 		b.Send(m.Sender, m.Payload)
 		balances, err := cli.GetBalances()
