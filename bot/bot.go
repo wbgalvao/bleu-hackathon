@@ -117,6 +117,23 @@ func Init() {
 		b.Send(m.Sender, fmt.Sprintf("Venda efetuada! Identificação da transação: %s", result["orderid"]))
 	})
 
+	b.Handle("/saque", func(m *tb.Message) {
+		splittedPayload := strings.Split(m.Payload, " ")
+		currency := splittedPayload[0]
+		quantity := splittedPayload[1]
+		walletDest := splittedPayload[2]
+		result, err := cli.Withdraw(currency, quantity, walletDest)
+		if err != nil {
+			fmt.Println("Deu erro")
+			b.Send(m.Sender, fmt.Sprintf("%v", err))
+		}
+		if result {
+			b.Send(m.Sender, fmt.Sprintf("Saque efetuado!"))
+		} else {
+			b.Send(m.Sender, fmt.Sprintf("Problema no saque"))
+		}
+	})
+
 	b.Handle(tb.OnText, func(m *tb.Message) {
 		// all the text messages that weren't
 		// captured by existing handlers
