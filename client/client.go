@@ -15,6 +15,7 @@ import (
 	"strconv"
 
 	"github.com/wbgalvao/bleu-hackathon/balance"
+	"github.com/wbgalvao/bleu-hackathon/market"
 	"github.com/wbgalvao/bleu-hackathon/order"
 )
 
@@ -42,6 +43,12 @@ type getOrdersResponse struct {
 	Success string
 	Message string
 	Result  []order.Order
+}
+
+type marketSummaryResponse struct {
+	Success string
+	Message string
+	Result  []market.Market
 }
 
 func getHashMacStr(message, key string) string {
@@ -274,4 +281,48 @@ func (c *Client) ListOrder(market, orderStatus, orderType string, opt ...string)
 	}
 
 	return gor.Result, nil
+}
+
+func (c *Client) GetMarketSummary(m string) ([]market.Market, error) {
+
+	var result []market.Market
+	if m == "" {
+		return result, fmt.Errorf("empty market in function call")
+	}
+
+	// build request
+	req, err := c.BuildRequest("GET", "/public/getmarketsummary", nil)
+	if err != nil {
+		return result, fmt.Errorf("error creating request for market summary")
+	}
+
+	// build params for request withdraw
+	q := req.URL.Query()
+	q.Add("market", m)
+	req.URL.RawQuery = q.Encode()
+
+	// execute request
+	resp, err := c.DoRequest(req, true)
+	if err != nil {
+		return result, fmt.Errorf("error in market summary request: %v", err)
+	}
+
+	respJSON, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return result, fmt.Errorf("error reading response body: %v", err)
+	}
+	defer resp.Body.Close()
+
+	var msr marketSummaryResponse
+	err = json.Unmarshal(respJSON, &msr)
+	if err != nil {
+		return result, fmt.Errorf("could not unmarshall response body JSON: %v", err)
+	}
+
+	if msr.Success != "true" {
+		return result, fmt.Errorf("error retrieving market summary: %s", msr.Message)
+	}
+
+	return msr.Result, nil
+
 }

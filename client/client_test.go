@@ -120,6 +120,13 @@ func TestWithdrawOptionalParameter(t *testing.T) {
 // 	}
 // }
 
+func TestGetMarketSummary(t *testing.T) {
+	_, err := c.GetMarketSummary("ETH_BTC")
+	if err != nil {
+		t.Errorf("error calling getmarketsummary route: %v\n", err)
+	}
+}
+
 func TestMain(m *testing.M) {
 	setup()
 	retCode := m.Run()
