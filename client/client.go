@@ -14,9 +14,7 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/wbgalvao/bleu-hackathon/balance"
-	"github.com/wbgalvao/bleu-hackathon/market"
-	"github.com/wbgalvao/bleu-hackathon/order"
+	"github.com/wbgalvao/bleu-hackathon/model"
 )
 
 // Client represents a HTTP Client
@@ -30,7 +28,7 @@ type Client struct {
 type getBalancesResponse struct {
 	Success string
 	Message string
-	Result  []balance.Balance
+	Result  []model.Balance
 }
 
 type withdrawResponse struct {
@@ -42,13 +40,13 @@ type withdrawResponse struct {
 type getOrdersResponse struct {
 	Success string
 	Message string
-	Result  []order.Order
+	Result  []model.Order
 }
 
 type marketSummaryResponse struct {
 	Success string
 	Message string
-	Result  []market.Market
+	Result  []model.Market
 }
 
 type limitOperationsResponse struct {
@@ -115,8 +113,8 @@ func (c *Client) DoRequest(req *http.Request, requestIsPrivate bool) (*http.Resp
 }
 
 // GetBalances returns a list of Balances for a given account
-func (c *Client) GetBalances(opt ...string) ([]balance.Balance, error) {
-	var result []balance.Balance
+func (c *Client) GetBalances(opt ...string) ([]model.Balance, error) {
+	var result []model.Balance
 	if len(opt) > 1 {
 		return result, fmt.Errorf("To many args for this function")
 	}
@@ -198,8 +196,8 @@ func (c *Client) Withdraw(currency, quantity, destAddress string, opt ...string)
 }
 
 // ListOrder list pending orders in the crypto exchage server.
-func (c *Client) ListOrder(market, orderStatus, orderType string, opt ...string) ([]order.Order, error) {
-	var result []order.Order
+func (c *Client) ListOrder(market, orderStatus, orderType string, opt ...string) ([]model.Order, error) {
+	var result []model.Order
 	if len(opt) > 1 {
 		return result, fmt.Errorf("To many args for this function")
 	}
@@ -241,8 +239,8 @@ func (c *Client) ListOrder(market, orderStatus, orderType string, opt ...string)
 }
 
 // GetMarketSummary returns information about available markets in the crypto currency exchange.
-func (c *Client) GetMarketSummary(m string) ([]market.Market, error) {
-	var result []market.Market
+func (c *Client) GetMarketSummary(m string) ([]model.Market, error) {
+	var result []model.Market
 	if m == "" {
 		return result, fmt.Errorf("empty market in function call")
 	}
@@ -283,7 +281,7 @@ func (c *Client) BuyLimit(m, quantity string, opt ...string) (map[string]string,
 		return result, fmt.Errorf("too many args for this function")
 	}
 	// get market bid
-	var ms []market.Market
+	var ms []model.Market
 	ms, err := c.GetMarketSummary(m)
 	if err != nil {
 		return result, fmt.Errorf("could not retrieve market summary: %v", err)
@@ -333,7 +331,7 @@ func (c *Client) SellLimit(m, quantity string, opt ...string) (map[string]string
 		return result, fmt.Errorf("too many args for this function")
 	}
 	// get market bid
-	var ms []market.Market
+	var ms []model.Market
 	ms, err := c.GetMarketSummary(m)
 	if err != nil {
 		return result, fmt.Errorf("could not retrieve market summary: %v", err)

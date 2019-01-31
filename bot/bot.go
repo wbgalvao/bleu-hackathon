@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wbgalvao/bleu-hackathon/balance"
-	client "github.com/wbgalvao/bleu-hackathon/client"
+	"github.com/wbgalvao/bleu-hackathon/client"
+	"github.com/wbgalvao/bleu-hackathon/model"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -70,7 +70,7 @@ func Init() {
 	})
 
 	b.Handle("/saldo", func(m *tb.Message) {
-		var balances []balance.Balance
+		var balances []model.Balance
 		var err error
 		cli := senderCache[m.Sender.ID]
 		if m.Payload != "" {
