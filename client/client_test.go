@@ -24,7 +24,7 @@ func setup() {
 	c.BaseURL = u
 	c.APIKey = apiKey
 	c.APISecret = apiSecret
-	c.HttpClient = new(http.Client)
+	c.HTTPClient = new(http.Client)
 }
 
 func TestBuildRequest(t *testing.T) {

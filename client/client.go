@@ -24,7 +24,7 @@ type Client struct {
 	BaseURL    *url.URL
 	APIKey     string
 	APISecret  string
-	HttpClient *http.Client
+	HTTPClient *http.Client
 }
 
 type getBalancesResponse struct {
@@ -65,8 +65,8 @@ func getHashMacStr(message, key string) string {
 	return hex.EncodeToString(expectedMac)
 }
 
-func floatToString(input_num float64) string {
-	return strconv.FormatFloat(input_num, 'f', 8, 64)
+func floatToString(inputNum float64) string {
+	return strconv.FormatFloat(inputNum, 'f', 8, 64)
 }
 
 // BuildRequest uses the HTTP Client to build a new http.Request object
@@ -107,7 +107,7 @@ func (c *Client) DoRequest(req *http.Request, requestIsPrivate bool) (*http.Resp
 		q.Add("apisign", str)
 		req.URL.RawQuery = q.Encode()
 	}
-	resp, err := c.HttpClient.Do(req)
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -154,6 +154,8 @@ func (c *Client) GetBalances(opt ...string) ([]balance.Balance, error) {
 
 }
 
+// Withdraw makes a withdraws the given quantity in a given currenry and sends
+// this value to a given wallet addres.
 func (c *Client) Withdraw(currency, quantity, destAddress string, opt ...string) (bool, error) {
 	if len(opt) > 1 {
 		return false, fmt.Errorf("To many args for this function")
@@ -195,6 +197,7 @@ func (c *Client) Withdraw(currency, quantity, destAddress string, opt ...string)
 	return strconv.ParseBool(wr.Success)
 }
 
+// ListOrder list pending orders in the crypto exchage server.
 func (c *Client) ListOrder(market, orderStatus, orderType string, opt ...string) ([]order.Order, error) {
 	var result []order.Order
 	if len(opt) > 1 {
@@ -237,6 +240,7 @@ func (c *Client) ListOrder(market, orderStatus, orderType string, opt ...string)
 	return gor.Result, nil
 }
 
+// GetMarketSummary returns information about available markets in the crypto currency exchange.
 func (c *Client) GetMarketSummary(m string) ([]market.Market, error) {
 	var result []market.Market
 	if m == "" {
@@ -272,6 +276,7 @@ func (c *Client) GetMarketSummary(m string) ([]market.Market, error) {
 	return msr.Result, nil
 }
 
+// BuyLimit uses the crypto exchange API to buy limit to a given currency.
 func (c *Client) BuyLimit(m, quantity string, opt ...string) (map[string]string, error) {
 	result := make(map[string]string)
 	if len(opt) > 1 {
@@ -321,6 +326,7 @@ func (c *Client) BuyLimit(m, quantity string, opt ...string) (map[string]string,
 	return lor.Result, nil
 }
 
+// SellLimit uses the crypto exchange API to sell limit to a given currency.
 func (c *Client) SellLimit(m, quantity string, opt ...string) (map[string]string, error) {
 	result := make(map[string]string)
 	if len(opt) > 1 {

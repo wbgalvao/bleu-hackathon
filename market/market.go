@@ -1,5 +1,6 @@
 package market
 
+// Market holds the information about a cryptocurrency market.
 type Market struct {
 	Currency     string
 	BaseCurrency string

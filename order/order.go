@@ -1,7 +1,8 @@
 package order
 
+// Order represents an order in the cryptocurrency exchange server.
 type Order struct {
-	OrderId            string
+	OrderID            string
 	Exchange           string
 	Type               string
 	Quantity           string

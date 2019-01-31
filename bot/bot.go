@@ -14,25 +14,31 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const TOKEN_BOT = "676072443:AAGD_Ba7jDhlN3lIKij1Y4eZz7ImyktjQ_8"
-const URL = "https://bleutrade.com/api/v2/"
+const (
+	// TokenBot is the Telegram chatbot token used in the application
+	TokenBot = "676072443:AAGD_Ba7jDhlN3lIKij1Y4eZz7ImyktjQ_8"
+	// URL contains the hostname of the cyrpto exchange API
+	URL = "https://bleutrade.com/api/v2/"
+)
 
 var apiKey string
 var apiSecret string
 
+// NewClient creates a new HTTP client to be used by the chatbot
 func NewClient(apiKey, apiSecret string) client.Client {
 	var cli client.Client
 	cli.BaseURL, _ = url.Parse(URL)
-	cli.HttpClient = new(http.Client)
+	cli.HTTPClient = new(http.Client)
 	cli.APIKey = apiKey
 	cli.APISecret = apiSecret
 	return cli
 }
 
+// Init creates the chatbot and handles incoming messages
 func Init() {
 
 	b, err := tb.NewBot(tb.Settings{
-		Token:  TOKEN_BOT,
+		Token:  TokenBot,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 	})
 	if err != nil {
