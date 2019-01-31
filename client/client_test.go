@@ -11,13 +11,12 @@ import (
 
 var (
 	baseURL   = "https://bleutrade.com/api/v2/"
-	apiKey    = "af849b626359ccf9a13f0d8fde899c97" // ReadOnly access
+	apiKey    = "af849b626359ccf9a13f0d8fde899c97"
 	apiSecret = "ee8f3d52cadcb93b00b96f0be3d7d135a206e4ad"
 	c         Client
 )
 
 func setup() {
-	// setup test client
 	u, err := url.Parse(baseURL)
 	if err != nil {
 		log.Fatalf("error parsing base URL: %v\n", err)
@@ -89,8 +88,6 @@ func TestListOrdersOptionalParameter(t *testing.T) {
 }
 
 func TestWithdraw(t *testing.T) {
-	// NOTICE!!
-	// Substitute for your address wallet in the empty string
 	success, err := c.Withdraw("DOGE", "11", "199orcawcBHvftiAwp4vgEuix1f1DfR")
 	if err != nil {
 		t.Errorf("erro calling Withdraw endpoint: %v", err)
@@ -100,46 +97,12 @@ func TestWithdraw(t *testing.T) {
 	}
 }
 
-/*
-func TestWithdrawOptionalParameter(t *testing.T) {
-	// NOTICE!!
-	// Substitute for your address wallet in the empty string
-	success, err := c.Withdraw("DOGE", "12", "", "Hello Ramon. That's my comment.")
-	if err != nil {
-		t.Errorf("erro calling Withdraw endpoint: %v", err)
-	}
-	if success {
-		t.Errorf("SUCCESS!")
-	}
-}
-*/
-// func TestGetBalances_checkResults(t *testing.T) {
-// 	results, _ := c.GetBalances()
-// 	if len(results) == 0 {
-// 		t.Errorf("could not retrieve any balance from GetBalances endpoint\n")
-// 	}
-// }
-
 func TestGetMarketSummary(t *testing.T) {
 	_, err := c.GetMarketSummary("ETH_BTC")
 	if err != nil {
 		t.Errorf("error calling getmarketsummary route: %v\n", err)
 	}
 }
-
-// func TestBuyLimit(t *testing.T) {
-// 	_, err := c.BuyLimit("DOGE_BTC", "100")
-// 	if err != nil {
-// 		t.Errorf("error trying to buy limit: %v\n", err)
-// 	}
-// }
-
-// func TestSellLimit(t *testing.T) {
-// 	_, err := c.SellLimit("BTC_DOGE", "0.00001")
-// 	if err != nil {
-// 		t.Errorf("error trying to sell limit: %v\n", err)
-// 	}
-// }
 
 func TestMain(m *testing.M) {
 	setup()

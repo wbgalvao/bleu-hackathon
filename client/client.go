@@ -82,9 +82,6 @@ func (c *Client) BuildRequest(method, destPath string, body interface{}) (*http.
 
 	u.Path = path.Join(u.Path, destPath)
 
-	// rel := &url.URL{Path: path}
-	// u := c.BaseURL.ResolveReference(rel)
-
 	var buf io.ReadWriter
 	if body != nil {
 		buf = new(bytes.Buffer)

@@ -20,8 +20,6 @@ const URL = "https://bleutrade.com/api/v2/"
 var apiKey string
 var apiSecret string
 
-// senderCache = make(map[*tb.User]client.Client)
-
 func NewClient(apiKey, apiSecret string) client.Client {
 	var cli client.Client
 	cli.BaseURL, _ = url.Parse(URL)
@@ -160,8 +158,6 @@ func Init() {
 	})
 
 	b.Handle(tb.OnText, func(m *tb.Message) {
-		// all the text messages that weren't
-		// captured by existing handlers
 		b.Send(m.Sender, m.Text)
 	})
 
