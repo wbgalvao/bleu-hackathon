@@ -59,12 +59,7 @@ func Init() {
 		apiKey := splittedPayload[0]
 		apiSecret := splittedPayload[1]
 		ncli := NewClient(apiKey, apiSecret)
-		fmt.Println("new client mapped")
-		fmt.Println(ncli)
 		senderCache[m.Sender.ID] = ncli
-		fmt.Println("Sender")
-		fmt.Println(m.Sender.ID)
-
 		b.Send(m.Sender, "Chave e segredo registrados!")
 	})
 
@@ -80,11 +75,9 @@ func Init() {
 			balances, err = cli.GetBalances()
 		}
 		if err != nil {
-			fmt.Println("Deu erro")
 			b.Send(m.Sender, err)
 		}
 		for _, balance := range balances {
-			fmt.Println(balance)
 			if n, err := strconv.ParseFloat(balance.Available, 32); n > 0 && err == nil {
 				b.Send(m.Sender, "Moeda: "+balance.Currency+"\nSaldo: "+balance.Balance)
 			}
@@ -93,12 +86,9 @@ func Init() {
 
 	b.Handle("/wallet", func(m *tb.Message) {
 		var cli = senderCache[m.Sender.ID]
-		fmt.Println("sender wallet")
-		fmt.Println(m.Sender)
 		b.Send(m.Sender, m.Payload)
 		result, err := cli.GetBalances("BTC")
 		if err != nil {
-			fmt.Println("Deu erro")
 			b.Send(m.Sender, err)
 		}
 		for _, balance := range result {
@@ -117,7 +107,6 @@ func Init() {
 		result := make(map[string]string)
 		result, err := cli.BuyLimit(market, quantity)
 		if err != nil {
-			fmt.Println("Deu erro")
 			b.Send(m.Sender, err)
 		}
 		b.Send(m.Sender, fmt.Sprintf("Compra efetuada! Identificação da transação: %s", result["orderid"]))
@@ -132,7 +121,6 @@ func Init() {
 		result := make(map[string]string)
 		result, err := cli.SellLimit(market, quantity)
 		if err != nil {
-			fmt.Println("Deu erro")
 			b.Send(m.Sender, err)
 		}
 		b.Send(m.Sender, fmt.Sprintf("Venda efetuada! Identificação da transação: %s", result["orderid"]))
@@ -147,7 +135,6 @@ func Init() {
 		walletDest := splittedPayload[2]
 		result, err := cli.Withdraw(currency, quantity, walletDest)
 		if err != nil {
-			fmt.Println("Deu erro")
 			b.Send(m.Sender, fmt.Sprintf("%v", err))
 		}
 		if result {
@@ -161,6 +148,5 @@ func Init() {
 		b.Send(m.Sender, m.Text)
 	})
 
-	fmt.Println("Bot started")
 	b.Start()
 }

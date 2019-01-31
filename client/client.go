@@ -63,7 +63,6 @@ func getHashMacStr(message, key string) string {
 	mac := hmac.New(sha512.New, secretInBytes)
 	mac.Write([]byte(message))
 	expectedMac := mac.Sum(nil)
-	fmt.Printf("[DBG] getHashMacStr %s + %s = ", message, key)
 
 	return hex.EncodeToString(expectedMac)
 }
@@ -106,8 +105,6 @@ func (c *Client) BuildRequest(method, destPath string, body interface{}) (*http.
 
 	req.URL.RawQuery = q.Encode()
 
-	fmt.Println("[DBG] " + req.URL.String())
-
 	return req, nil
 }
 
@@ -116,13 +113,11 @@ func (c *Client) DoRequest(req *http.Request, requestIsPrivate bool) (*http.Resp
 	if requestIsPrivate {
 		q := req.URL.Query()
 		str := getHashMacStr(req.URL.String(), c.APISecret)
-		fmt.Println(str)
 		q.Add("apisign", str)
 
 		req.URL.RawQuery = q.Encode()
 	}
 
-	fmt.Println("[URL] " + req.URL.String())
 	resp, err := c.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -144,8 +139,6 @@ func (c *Client) GetBalances(opt ...string) ([]balance.Balance, error) {
 	if err != nil {
 		return result, fmt.Errorf("error creating request for GetBalance")
 	}
-	fmt.Println("[DEBUG_OPT]")
-	fmt.Println(opt)
 
 	if len(opt) > 0 {
 		q := req.URL.Query()
@@ -156,7 +149,6 @@ func (c *Client) GetBalances(opt ...string) ([]balance.Balance, error) {
 	// execute request
 	resp, err := c.DoRequest(req, true)
 	if err != nil {
-		fmt.Println()
 		return result, fmt.Errorf("error in GetBalances request: %v", err)
 	}
 
@@ -173,8 +165,6 @@ func (c *Client) GetBalances(opt ...string) ([]balance.Balance, error) {
 	if err != nil {
 		return result, fmt.Errorf("could not unmarshall response body JSON: %v", err)
 	}
-
-	fmt.Println(string(respJSON))
 
 	if gbr.Success != "true" {
 		return result, fmt.Errorf("error retrieving balance for account: %s", gbr.Message)
@@ -210,7 +200,6 @@ func (c *Client) Withdraw(currency, quantity, destAddress string, opt ...string)
 	// execute request
 	resp, err := c.DoRequest(req, true)
 	if err != nil {
-		fmt.Println()
 		return false, fmt.Errorf("error in Withdraw request: %v", err)
 	}
 
@@ -221,7 +210,6 @@ func (c *Client) Withdraw(currency, quantity, destAddress string, opt ...string)
 	}
 	defer resp.Body.Close()
 
-	fmt.Println(string(respJSON))
 	// decode response
 	var wr withdrawResponse
 	err = json.Unmarshal(respJSON, &wr)
@@ -264,7 +252,6 @@ func (c *Client) ListOrder(market, orderStatus, orderType string, opt ...string)
 	// execute request
 	resp, err := c.DoRequest(req, true)
 	if err != nil {
-		fmt.Println()
 		return result, fmt.Errorf("error in Withdraw request: %v", err)
 	}
 
@@ -275,7 +262,6 @@ func (c *Client) ListOrder(market, orderStatus, orderType string, opt ...string)
 	}
 	defer resp.Body.Close()
 
-	fmt.Println(string(respJSON))
 	// decode response
 	var gor getOrdersResponse
 	err = json.Unmarshal(respJSON, &gor)
@@ -347,8 +333,6 @@ func (c *Client) BuyLimit(m, quantity string, opt ...string) (map[string]string,
 		return result, fmt.Errorf("could not retrieve market summary: %v", err)
 	}
 
-	fmt.Println(ms)
-
 	rate := floatToString(ms[0].Bid)
 
 	// build request
@@ -370,7 +354,6 @@ func (c *Client) BuyLimit(m, quantity string, opt ...string) (map[string]string,
 	// execute request
 	resp, err := c.DoRequest(req, true)
 	if err != nil {
-		fmt.Println()
 		return result, fmt.Errorf("error in BuyLimit request: %v", err)
 	}
 
@@ -429,7 +412,6 @@ func (c *Client) SellLimit(m, quantity string, opt ...string) (map[string]string
 	// execute request
 	resp, err := c.DoRequest(req, true)
 	if err != nil {
-		fmt.Println()
 		return result, fmt.Errorf("error in SellLimit request: %v", err)
 	}
 
@@ -439,8 +421,6 @@ func (c *Client) SellLimit(m, quantity string, opt ...string) (map[string]string
 		return result, fmt.Errorf("error reading response body: %v", err)
 	}
 	defer resp.Body.Close()
-
-	fmt.Println(string(respJSON))
 
 	// decode response
 	var lor limitOperationsResponse
