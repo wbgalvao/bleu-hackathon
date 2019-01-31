@@ -32,7 +32,6 @@ func TestBuildRequest(t *testing.T) {
 	if err != nil {
 		t.Errorf("error building HTTP request: %v\n", err)
 	}
-
 }
 
 func TestGetBalances(t *testing.T) {
@@ -41,7 +40,6 @@ func TestGetBalances(t *testing.T) {
 	if err != nil {
 		t.Errorf("error calling GetBalances endpoint: %v\n", err)
 	}
-
 	for _, balance := range balances {
 		if n, err := strconv.ParseFloat(balance.Available, 32); n > 0 && err == nil {
 			t.Logf("[LOG] Coin: %s | Value: %s\n", balance.Currency, balance.Available)
@@ -55,7 +53,6 @@ func TestGetBalancesOptionalParameter(t *testing.T) {
 	if err != nil {
 		t.Errorf("error calling GetBalances endpoint: %v\n", err)
 	}
-
 	for _, balance := range balances {
 		if n, err := strconv.ParseFloat(balance.Available, 32); n > 0 && err == nil {
 			t.Logf("[LOG] Coin: %s | Value: %s\n", balance.Currency, balance.Available)
@@ -69,7 +66,6 @@ func TestListOrders(t *testing.T) {
 	if err != nil {
 		t.Errorf("error calling GetBalances endpoint: %v\n", err)
 	}
-
 	for _, order := range orders {
 		t.Logf("[LOG] Type: %s | Status: %s|Created at: %s| Price: %s\n", order.Type, order.Status, order.Created, order.Price)
 	}
@@ -81,7 +77,6 @@ func TestListOrdersOptionalParameter(t *testing.T) {
 	if err != nil {
 		t.Errorf("error calling GetBalances endpoint: %v\n", err)
 	}
-
 	for _, order := range orders {
 		t.Logf("[LOG] Type: %s | Status: %s|Created at: %s| Price: %s\n", order.Type, order.Status, order.Created, order.Price)
 	}

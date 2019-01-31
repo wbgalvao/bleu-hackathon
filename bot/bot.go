@@ -24,22 +24,22 @@ func NewClient(apiKey, apiSecret string) client.Client {
 	var cli client.Client
 	cli.BaseURL, _ = url.Parse(URL)
 	cli.HttpClient = new(http.Client)
-
 	cli.APIKey = apiKey
 	cli.APISecret = apiSecret
 	return cli
 }
 
 func Init() {
+
 	b, err := tb.NewBot(tb.Settings{
 		Token:  TOKEN_BOT,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 	})
-
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
+
 	senderCache := make(map[int]client.Client)
 
 	b.Handle("/registerApiKey", func(m *tb.Message) {
