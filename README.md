@@ -14,11 +14,8 @@ To access the Telegram chatbot, use this  [link](t.me/donamariabot).
 * `/buylimit [Market] [Quantity]`: Buys a given quantity of a given market (crypto currency).
 * `/wallet`: Retrieves the address of the setup user cryto currency wallet.
 
-## build instructions with Docker
+## Docker build instructions
 
-build the image:
-`$ docker build . -t donamaria`
-
-run container:
-`$ docker container run -d donamaria`
+01. Build the image: `docker build . -t donamaria`
+02. Run container: `docker container run -d donamaria`
 
