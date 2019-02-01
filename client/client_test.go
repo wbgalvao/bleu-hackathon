@@ -11,8 +11,8 @@ import (
 
 var (
 	baseURL   = "https://bleutrade.com/api/v2/"
-	apiKey    = "af849b626359ccf9a13f0d8fde899c97"
-	apiSecret = "ee8f3d52cadcb93b00b96f0be3d7d135a206e4ad"
+	apiKey    = ""
+	apiSecret = ""
 	c         Client
 )
 
